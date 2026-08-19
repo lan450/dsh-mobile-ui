@@ -23,6 +23,7 @@ Make the [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web
 | Settings full-screen | Settings page goes full-screen with a top horizontal nav; inputs take the full row width |
 | Question card two-row footer | `ask_user_question` cards: footer splits into two rows (pager + error hint on one, action buttons right-aligned on the next) — buttons are never clipped on narrow screens, the card uses the full width, and long option text wraps |
 | Plan-review card | Plan-review cards get the same two-row footer; the three buttons wrap instead of overflowing |
+| Message meta wraps | The per-message meta line (time · ran-for · first-token · tok/s; hover-revealed on desktop, always shown on mobile) wraps instead of clipping — nothing ever overflows the screen at any width |
 | Dialog recentering | Dialogs that render into a 0-width column and become invisible are auto-recentered |
 | Overlap self-healing | Runtime detection of real button/control overlaps; the offending flex row is switched to wrapping (`.mui-wrap`) |
 
