@@ -1,0 +1,30 @@
+{
+  "name": "dsh-mobile-ui",
+  "version": "0.3.2",
+  "description": "Mobile UI adaptation for the DSH web app (v3.2): overflow containment, overlay sidebar/details, bottom-sheet pickers, dialog recentering, safe-area handling, overlap self-healing, and two-row question/plan-review card footers on narrow screens — driven by stable DOM data hooks plus runtime class derivation, with a console diagnostic snapshot (window.__dshMobileUi) for per-fix verification.",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-layout",
+        "@deepseek-ai/dsh-client-ui-conversation",
+        "@deepseek-ai/dsh-client-ui-model-selection",
+        "@deepseek-ai/dsh-client-ui-commands",
+        "@deepseek-ai/dsh-client-ui-jobs",
+        "@deepseek-ai/dsh-session-log-export",
+        "@deepseek-ai/dsh-client-ui-settings-general"
+      ],
+      "platform": "web"
+    }
+  },
+  "files": [
+    "lib"
+  ],
+  "license": "MIT"
+}

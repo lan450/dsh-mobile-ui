@@ -1,0 +1,11 @@
+# Distribution patch layer: registers the mobile-ui client plugin into the
+# profile's browser roster. Install with
+#   bash install.sh
+# or manually clone the repo into <profile>/plugins/dsh-mobile-ui, add
+#   "dsh-mobile-ui": "file:plugins/dsh-mobile-ui"
+# to the profile package.json, then this row makes the web UI load the
+# plugin's bundled client (the package's `dsh.client` declaration marks it
+# as a browser-roster entry).
+- insert:
+    - id: mobile-ui
+      name: 'dsh-mobile-ui'
