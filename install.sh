@@ -71,6 +71,18 @@ echo "==> pnpm install (links $PLUGIN_NAME into node_modules)"
   pnpm install >/dev/null
 )
 
+# pnpm 对 file: 依赖会把包复制进 node_modules（不是链接），之后改插件源码
+# 不会生效。这里把 node_modules 里的副本替换成指向 plugins/ 的符号链接，
+# 让「改 lib/client.js → 刷新页面即生效」成立。路径从 node_modules 出发，
+# 顶级包只需 ../plugins/<name>（scoped 包才是 ../../plugins/<name>）。
+echo "==> Linking $PROFILE_DIR/node_modules/$PLUGIN_NAME -> plugins/$PLUGIN_NAME"
+rm -rf "$PROFILE_DIR/node_modules/$PLUGIN_NAME"
+ln -s "../plugins/$PLUGIN_NAME" "$PROFILE_DIR/node_modules/$PLUGIN_NAME"
+if [ ! -f "$PROFILE_DIR/node_modules/$PLUGIN_NAME/package.json" ]; then
+  echo "error: symlink target does not resolve — plugins/$PLUGIN_NAME missing?" >&2
+  exit 1
+fi
+
 echo "==> Registering in $PROFILE_DIR/cordis.patch.yml"
 if grep -q "name: '$PLUGIN_NAME'" "$PROFILE_DIR/cordis.patch.yml" 2>/dev/null; then
   echo "    already registered"

@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.3.3 (2026-08-19)
+
+- **彻底按需触发**：宽度未命中移动端查询（>820px）时插件整套不运行——
+  不注入任何样式、不跑行为块（模型缩写/弹窗重居中）、不起轮询和观察器，
+  桌面端零干预；跨过断点自动启停（matchMedia change 监听）
+- 模型触发键缩写（Flash/Pro）在插件停止时恢复完整名（原文本存
+  `dataset.muiOrig`，stop 时还原），不留痕迹
+- `install.sh`：pnpm 装完把 node_modules 里的包替换为指向 `plugins/` 的
+  符号链接（`../plugins/<name>`），保证「改 lib/client.js → 刷新页面即
+  生效」；并验证链接可解析
+
 ## v0.3.2 (2026-08-19)
 
 - 新增 `questionSheet` 块：选项卡片（ask_user_question）移动端两行 footer
