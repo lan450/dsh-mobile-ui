@@ -1,5 +1,38 @@
 # Changelog
 
+## v0.3.8 (2026-08-24)
+
+- 模型触发键缩写加兜底：除 Flash/Pro/Vision 外的任何其它模型（含未来新增、
+  第三方目录）一律缩成 `Model`，触发键永不溢出；官方占位文案（未选模型时的
+  "选择模型"/"Select model"）保持原样不被误改
+
+## v0.3.7 (2026-08-24)
+
+- 模型触发键缩写：视觉模型 `DeepSeek-V4-Flash-Vision-Exp` 由 `Flash Vision`
+  改为只显示 `Vision`——`Flash Vision` 在窄屏底行仍偏长、会挤出两行，
+  `Vision` 更短，与 Flash/Pro 一样单行放下
+
+## v0.3.6 (2026-08-24)
+
+- 新增 `composerRow` 块：官方新的「上下文用量」按钮（ContextMeter）加进输入区
+  底行 `.trailing` 后，360px 上下整行被 `flex-wrap` 挤成两行——收紧底行/
+  工具行/尾随组间距并微调按钮尺寸，让模型+上下文+停止+发送与左边工具单行放下
+- 新增 `contextMeter` 块：ContextMeter 弹窗原为相对触发器右缘、宽 264px 的
+  绝对定位，窄屏下会向视口左/右外侧溢出被裁切——手机端改成相对视口的固定
+  底部弹层（左右 10px、bottom 安全区、宽度限幅、可滚动），整屏完整可见
+
+## v0.3.5 (2026-08-24)
+
+- 模型触发键缩写支持新的 DeepSeek 官方目录（新增 `DeepSeek-V4-Flash-Vision-Exp`）：
+  视觉模型不再被名字里的 `flash` 误缩成 `Flash`，而是缩写为 `Vision`
+  （匹配顺序先 vision 再 flash/pro）
+- 修复切换模型时「先显示全名、约 1 秒后才变缩写」的延迟：`MutationObserver`
+  原先只监听 `childList`，而 React 切换模型是复用文本节点改 `data`
+  （`characterData` 变更），被漏掉、要等下一轮轮询。现在订阅 `characterData`，
+  模型一改就立即重新缩写
+- 缩写改为就地改文本节点 `data`，不再用 `textContent` 整段替换，避免把
+  React 持有的文本节点摘掉、导致之后切换模型触发键不再更新
+
 ## v0.3.4 (2026-08-19)
 
 - 新增 `messageMeta` 块：消息 meta 行（时间 · 用时 · 首 token · tok/s）
