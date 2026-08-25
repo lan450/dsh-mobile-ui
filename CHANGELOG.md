@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.3.12 (2026-08-26)
+
+- 新增 `jobsMenu` 块：官方「后台任务弹窗」（`@deepseek-ai/dsh-client-ui-jobs`
+  的 `JobListAction`）原是绝对定位（`top:calc(100%+5px)`、`left:0`）的下拉列表，
+  宽固定 336px。手机会话页里触发键在头部、位置随布局变化，点击后菜单从触发键
+  左缘往右铺开、被挤出视口右缘裁切——移动端改成相对视口的固定底部抽屉
+  （左右 10px + 底部安全区、限高可滚动、圆角），列表整屏完整可见，与既有
+  contextMeter/modelSheet/popupSheet 的底部抽屉风格一致
+  - `package.json` 无需新增 inject 依赖（`@deepseek-ai/dsh-client-ui-jobs` 已在
+    inject 列表中，其 `JobListAction.module.css` 样式表已就绪）
+
 ## v0.3.11 (2026-08-25)
 
 - 修复移动端展开侧栏时 grid 错位：侧栏 `position:absolute` 脱离 grid 流后，
