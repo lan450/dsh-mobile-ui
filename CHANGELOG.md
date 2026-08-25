@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.3.13 (2026-08-26)
+
+- 修复会话页头部「行距被撑大」：原 `chatLayout` 用 flex-wrap +
+  `crumbs(flex:1 1 auto)`，标题面包屑（含「N 个子代理」）填满整行后，
+  `headerUtilities`（下载会话按钮，`flex:0 0 auto`）被挤到中间独立一行，
+  标题行与「标准模式+后台任务」动作行之间多出一行、行距被撑大（桌面端
+  正常，移动端 ≤820px 明显）。
+- 改为两列 grid：col1 = 标题面包屑（`minmax(0,1fr)` 可截断收缩），
+  col2 = 下载会话（`auto`，`justify-self:end` 始终靠右锚定）；标准模式
+  +后台任务仍独占第二行——头部稳定回到「任务名称 + 下载会话」一行 /
+  「标准模式 + 后台任务」一行的两行布局，任何标题长度下下载按钮都不会
+  被挤到中间行。
+- 只改 `lib/client.js`（浏览器半）、`package.json` 版本号，未改
+  `dsh.client.inject` 列表——无需重启服务，手机刷新页面即生效。
+
 ## v0.3.12 (2026-08-26)
 
 - 新增 `jobsMenu` 块：官方「后台任务弹窗」（`@deepseek-ai/dsh-client-ui-jobs`
