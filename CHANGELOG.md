@@ -1,5 +1,24 @@
 # Changelog
 
+## v0.3.14 (2026-09-05)
+
+- 修复会话页头部「标题短时标准模式挤上第一行」（及长标题时下载按钮掉到第二行）：
+  根因是 `flex-wrap` 的**归行发生在 `flex-grow` 之前**，按每一项的
+  hypothetical（= `flex-basis`）宽度判断能否放进当前行；`flex-grow` 只负责
+  分行后把空位填满，不参与归行。旧写法 `crumbCurrent` 用 `flex:1 1 auto`、
+  `headerActions` 用 `flex:0 1 auto`，于是标题短时第一行有空位 →
+  headerActions（标准模式+后台任务）被塞进第一行；标题长时其 basis 巨大、
+  独占第一行 → 下载按钮掉到第二行。
+- 方案（`lib/client.js` 的 `chatLayout` + `subagentLineage` 块）：
+  - `crumbCurrent`（及子代理切换器 `.switcherRoot`）改为 `flex:1 1 0`：标题
+    只在行内 grow/ellipsis，永不把下载按钮挤下去，下载按钮始终钉在第一行右缘。
+  - `headerActions` 改为 `flex:0 1 100%`：强制标准模式+后台任务永远独占一行
+    （第二行起），与标题长短无关；它自身带 `flex-wrap`，两按钮可在整行内换行。
+- 实测（无头 Chrome 390px，短/中/长标题三档）：标题+下载一定在第一行，
+  标准模式+后台任务一定在第二行或以下。
+- 只改 `lib/client.js`（浏览器半）与版本号，未改 `dsh.client.inject` 列表——
+  无需重启服务，手机刷新页面即生效。
+
 ## v0.3.13 (2026-08-26)
 
 - 修复会话页头部「第一行太窄 / 下载按钮被挤到中间行 / 层叠计数放进第一行」：
