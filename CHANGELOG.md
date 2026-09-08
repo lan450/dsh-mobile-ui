@@ -1,5 +1,39 @@
 # Changelog
 
+## v0.3.15 (2026-09-08)
+
+- 修复「内测模型 `deepseek-v4.1-flash-expires-on-0910`（配置名现为 `4.1 Flash`，
+  报障时叫 `v4.1-Flash`）在输入区触发键上被缩成 `Flash`，与 `deepseek-v4-flash`
+  撞名」：
+  - 根因：触发键文字取服务端下发的 `model.name`（即 `~/.dsh/settings.yaml`
+    里的 `name:`），而 `modelLabel` 块的缩写是纯正则、第一个命中即生效——
+    名字里含 `flash` 就命中 `/flash/i` → `Flash`，版本号 `4.1` 被丢掉。
+    这套规则是当初按官方全名（`DeepSeek-V4-Flash` / `DeepSeek-V4-Pro` /
+    `DeepSeek-V4-Flash-Vision-Exp`）写的；后来 settings 里的 name 已简化成
+    `Flash` / `Pro` / `Vision` / `4.1 Flash`，它就变成对已简化名再缩一遍，
+    把用户自己起的短名改坏。
+  - 方案：缩写只对**长名**生效（`MAX_SHORT_NAME = 14` 字符以上，即官方全名
+    与第三方目录名）；名字本身够短时原样显示。占位文案（`选择模型` /
+    `Select model`）永远不动。缩写结果 `Flash`/`Pro`/`Vision`/`Model` 都远短于
+    这条线，函数天然幂等，不会把自己的输出再缩一遍；`muiOrig` 原文记录 /
+    宽屏恢复逻辑不变。
+  - 实测（无头 Chrome 连运行中的 GUI，`is_mobile` 390×844）：
+    - 改前：触发键 `aria-label="选择模型，当前 v4.1-Flash，推理等级 High"`，
+      可见文字 `Flash`。
+    - 改后：可见文字原样显示配置名（测量时为 `4.1 Flash`，`title`/`aria-label`
+      同为该名）；在触发键里注入长名 `DeepSeek-V4-Flash-Vision-Exp` 仍被缩成
+      `Vision`、`DeepSeek-V4-Pro` 缩成 `Pro`、`DeepSeek-V4-Flash` 缩成 `Flash`、
+      `some-random-model-xyz` 缩成 `Model`，占位文案 `选择模型` / `Select model`
+      与短名 `Flash-Vision` / `v4.1-Flash` 原样不动——8 条规则逐条实测通过。
+    - 宽屏恢复：390px 下注入 `DeepSeek-V4-Pro` → 显示 `Pro`、记下原文；
+      拉到 1100px 插件停用 → 恢复 `DeepSeek-V4-Pro`；收回 390px → 重新缩写。
+    - 底行宽度：320 / 340 / 360 / 390px 四档（标签 `4.1 Flash` 51px），
+      底行高度恒 40px、`scrollWidth === clientWidth`，无换行无横向溢出。
+  - 顺带把 `window.__dshMobileUi.version` 从写死的 `0.3.13` 对齐到 `0.3.15`
+    （此前与 package.json 不一致）。
+  - 只改 `lib/client.js`（浏览器半）与版本号，未改 `dsh.client.inject` 列表——
+    无需重启服务，手机刷新页面即生效。
+
 ## v0.3.14 (2026-09-05)
 
 - 修复会话页头部「标题短时标准模式挤上第一行」（及长标题时下载按钮掉到第二行）：
