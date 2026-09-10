@@ -1,6 +1,6 @@
 {
   "name": "dsh-mobile-ui",
-  "version": "0.3.17",
+  "version": "0.3.18",
   "description": "Mobile UI adaptation for the DSH web app (v3.3): on-demand only — nothing runs on wide screens; overflow containment, overlay sidebar/details, bottom-sheet pickers, two-row question/plan-review card footers, safe-area handling — driven by stable DOM data hooks plus runtime class derivation, with a console diagnostic snapshot (window.__dshMobileUi) for per-fix verification.",
   "type": "module",
   "main": "lib/index.js",

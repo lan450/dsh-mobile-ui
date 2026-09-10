@@ -1,5 +1,50 @@
 # Changelog
 
+## v0.3.18 (2026-09-10)
+
+dsh 0.1.5-rc.1 适配复核（全量审计）后的收尾版本。结论：**除下面两处收尾外，
+插件在 0.1.5-rc.1 上不需要新的适配**（v0.3.16 已修的三处是这次升级仅有的真实
+断裂点）。
+
+- 修复：侧栏遮罩「点外侧关闭」可能命中右侧栏的 toggle。
+  - 根因：`setupSidebarScrim().closeSidebar()` 用
+    `button[aria-label*="侧边栏"]` 取第一个匹配，而官方右栏自己的按钮叫
+    「收起右侧边栏 / collapse right sidebar」，同样含关键词。实测 DOM 顺序
+    上左栏按钮在前（左栏展开时首个匹配正是「收起侧边栏」），所以此前没暴露，
+    但这是靠顺序兜的。
+  - 方案：收集全部匹配后排除 `[data-sidebar-right-panel]` 内的按钮，以及
+    aria-label 含「右侧/right」的按钮，再取第一个。
+  - 实测（Playwright 390×844、is_mobile）：折叠 → 点「打开侧边栏」→ 侧栏列
+    56px→301px 展开；点右侧遮罩 → 回到 56px、frame 重新带
+    `data-sidebar-collapsed`，行为与改前一致。
+- 更正文件头钩子清单：`data-details-collapsed` → `data-rightbar-collapsed`
+  （官方 0.1.5 已改名；旧名在官方包里 0 命中，仅注释残留）。
+- 复核记录（不改代码，存档备查）：
+  - **静态**：15 个 derived 块的 `tag` 与全部 `entries` 在官方 0.1.5-rc.1 包里
+    逐一存在（0 个 miss）；插件依赖的 7 个 data-* 钩子
+    （sidebar-collapsed / rightbar-collapsed / composer-seat / composer-card /
+    chat-flow / conversation-scroll / goal-bar）全部存在。
+  - **实机**（Playwright 连运行中的 GUI，390×844、is_mobile、devtools 真事件）：
+    首页、会话页、设置页四个 tab、左栏抽屉、右栏详情、模型底部抽屉、
+    上下文用量弹层、`/` 命令菜单、轨迹页、统计弹层——每处
+    `document.scrollWidth == clientWidth == 390`；会话页一次性扫描 101 个已加载
+    官方 CSS 模块，**0 个越界元素**（横向滚动容器内的表格已排除）；无 console /
+    page error；底行恒 40px 单行。
+  - **软键盘尺寸**：视口压到 500 / 380 高（≈键盘弹起）时，`/` 命令菜单由官方
+    自行限高到 204 / 144px，内部 `.viewport` 可滚动（scrollHeight 2584，
+    实测滚到 308），不裁切、不出屏。
+  - **断点**：1280px 与 821px 完全不注入（无 `dsh-mobile-ui/mobile.css`
+    style 标签、status 为空、模型名原样）；820px 起 21 块全 ok。
+  - 对一份静态审计（102 个官方 CSS 模块）提出的 13 处疑似风险逐条实机复核：
+    轨迹工具条（中文 + `--dsh-content-font-delta-secondary: 8px` 均不溢出）、
+    目录选择器（实测单栏 302px，非双栏 524px）、统计弹层（300px 全在视口内，
+    无 nowrap 外溢）、`/` 菜单（内部可滚）**均不成立**；tool/skill 的
+    `chevronHover` 是官方 hover 图标互换，触屏仍显示 idle 图标，非功能缺失。
+  - 未实机复现、留待出现时再处理的候选（不盲改）：QueueDock 排队行
+    （`.row{height:36px}` + `.file{flex:0 180px}`）、WorkflowRunPanel 阶段列
+    （`width:calc(132px + …)` 固定）、attachment `remove` 18px 热区、
+    设置页模型行四列网格、`TrajectoryToolbar` 英文 locale 下的换行余量。
+
 ## v0.3.17 (2026-09-10)
 
 - 移除「模型触发键缩写」行为块（`modelLabel` / `setupModelLabelShortener`，
