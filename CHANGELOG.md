@@ -1,5 +1,42 @@
 # Changelog
 
+## v0.3.16 (2026-09-10)
+
+- 修复升级 dsh 0.1.5-rc.1 后手机端（视口 ≤820px）整页白屏：
+  - 根因：官方 0.1.5-rc.1 把 AppFrame 第三列类名 `detailsCol` 改名为
+    `rightbarCol`（frame 上的属性族也已是 `data-rightbar-*`）。`shell` 块的
+    derive() 要求五个条目全齐才算成功，`detailsCol` 派生不到 → 整体返回
+    null → 该块全部规则退化到属性选择器兜底。其中隐藏拖拽把手的规则
+    `${H} { display: none !important }` 兜底选择器为
+    `[data-sidebar-collapsed],[data-details-collapsed] > div:nth-child(n+5)`，
+    首段 `[data-sidebar-collapsed]` 单独成段，而 frame 自己就带
+    `data-sidebar-collapsed` 属性 → 整个应用框架 display:none，
+    页面只剩 #root 之外的鲸鱼余额挂件。
+  - 方案：`shell` 块 entries 里 `detailsCol` → `rightbarCol`，build 里
+    `c.detailsCol` → `c.rightbarCol`，派生恢复成功，哈希类名选择器接管，
+    兜底选择器不再触发。
+  - 实测（IAB 390×844 视口，连本机 0.1.5-rc.1）：改前 frame
+    `display: none`、#root 内 180 个元素 0 个可见（白屏复现）；改后
+    frame `display: grid`、125 个元素可见。
+- 修复右栏全屏遮挡（评审发现，同源问题的第二阶段）：
+  - 根因：详情列全屏规则 `${F}:not([data-details-collapsed]) ${D}` 里的
+    `data-details-collapsed` 在 0.1.5 已随改名变成 `data-rightbar-collapsed`，
+    旧属性名恒不存在 → `:not(...)` 恒真 → 通常是空 div 的右栏列在手机端
+    永远套上 `position:fixed; inset:0; z-index:25` 的全屏不透明层，
+    `elementFromPoint` 实测输入框中心命中的是 `rightbarCol` 而非输入框，
+    全页可看不可点。
+  - 方案：`:not([data-details-collapsed])` → `:not([data-rightbar-collapsed])`；
+    顺带把 F 兜底选择器和 sidebarScrim 的 frame 查询里两处
+    `data-details-collapsed` 同步改名。
+- 跟进 0.1.5 的两处官方模块迁移（评审发现，均为静默失配→功能退化）：
+  - `messageMeta` 块：`MessageIconActions.module.css` 从 `dsh-client-ui-conversation`
+    迁到 `dsh-client-ui-chat`，更新 tag 路径（三个类名 `actions/timeStart/timeEnd`
+    在新模块里已逐一验证存在）。
+  - `exportIcon` 块：`session-log-export` 的 `HeaderAction.module.css` 里
+    `sessionLogButton` 更名 `moreButton`（官方已自带 28px 图标化），块改为
+    跟随新类名、作为「官方把文字 label 加回来」时的保险。
+- 其它：client.js 诊断口的 `version` 串同步 0.3.16。
+
 ## v0.3.15 (2026-09-08)
 
 - 修复「内测模型 `deepseek-v4.1-flash-expires-on-0910`（配置名现为 `4.1 Flash`，
