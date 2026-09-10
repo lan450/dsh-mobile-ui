@@ -1,5 +1,29 @@
 # Changelog
 
+## v0.3.17 (2026-09-10)
+
+- 移除「模型触发键缩写」行为块（`modelLabel` / `setupModelLabelShortener`，
+  含 `MAX_SHORT_NAME` 判定、`muiOrig` 原文记录与宽屏恢复）——官方已经自己
+  做了窄屏简化，这块逻辑不再有必要，而且在还会显示名字的宽度上会丢信息：
+  - 官方 0.1.5-rc.1 的 `ModelSelect.module.css` 里，触发键自己带容器查询
+    `@container (width<=360px) { .triggerIcon { display:block }
+    .triggerLabel, .triggerEffort { display:none } }`，容器就是它所在的
+    输入区底行（`InputBar.module.css` 的 `.row`，`container-type:
+    inline-size`；访问模式触发器是同一套写法）。也就是窄屏官方只留图标、
+    不留文字。
+  - 实测（Playwright 连运行中的 GUI，390×844、is_mobile、插件 0.3.16）：
+    底行容器内容宽 **300px** ≤ 360px → `triggerLabel` / `triggerEffort`
+    计算样式均为 `display: none`，触发键宽 46px；但插件缩写仍在改那个
+    不可见文本节点——`textContent = "Flash"`、`data-mui-orig =
+    "DeepSeek-V41-Flash"`，纯空转还往 DOM 上挂脏属性。
+  - 同一探针在 700px（仍在 ≤820px 移动端区间、容器 >360px、名字会显示）
+    下：触发键可见文字被缩成 `Flash`，而 `aria-label` / `title` 仍是
+    `DeepSeek-V41-Flash`——版本号 4.1 被吞掉。移除后此处恢复显示官方原名。
+  - 只删行为：`modelSheet` 块的底部抽屉、触发键收窄（`max-width:
+    min(240px, 55vw)`）与推理等级徽标隐藏都保留（那些是布局适配，不是改名）。
+  - 只改 `lib/client.js`（浏览器半）与版本号，`dsh.client.inject` 列表未动
+    ——无需重启服务，手机刷新页面即生效。
+
 ## v0.3.16 (2026-09-10)
 
 - 修复升级 dsh 0.1.5-rc.1 后手机端（视口 ≤820px）整页白屏：

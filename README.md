@@ -15,7 +15,7 @@ Make the [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web
 | On-demand trigger | Since v0.3.3 the plugin only runs when the viewport is ≤820px; on wider screens nothing is injected or executed — zero desktop impact even at runtime |
 | Overflow containment | Page never scrolls horizontally; long tokens wrap; code blocks / tables scroll inside; images shrink; dialogs never exceed the viewport |
 | Sidebar overlay + details full-screen | Expanding the sidebar on a phone overlays the content instead of squeezing the chat column; the details/preview panel becomes a full-screen layer |
-| Composer safe area | Input area avoids the iOS bottom safe-area inset; the model trigger shortens to Flash/Pro/Vision/Model only for long names (short configured names such as `4.1 Flash` render as-is); the composer bottom row tightens so the new context-usage button stays on one line |
+| Composer safe area | Input area avoids the iOS bottom safe-area inset; the model trigger's text is left to the official component (it already collapses to an icon-only button when its bottom-row container is ≤360px wide); the composer bottom row tightens so the new context-usage button stays on one line |
 | Model picker → bottom sheet | Model selector becomes a thumb-reachable bottom sheet |
 | Command popups → bottom sheet | `/model` and similar popupSelect views become bottom sheets |
 | Context-usage panel | The new official context-usage popup would clip at the viewport edge on narrow screens — restyled as a fixed bottom sheet so it's always fully visible |
