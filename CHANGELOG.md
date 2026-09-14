@@ -1,5 +1,47 @@
 # Changelog
 
+## v0.3.19 (2026-09-14)
+
+修复：手机端会话页「对话/轨迹」标签行右端多出一条小白条（会话态正压在鲸鱼
+挂件上，看着像鲸鱼图标旁边长了个白条）。这是 0.1.5-rc.1 升级引入的真实断裂点
+（同一处 0.1.1-rc.2 上不存在），也是 v0.3.16「0.1.5-rc.1 适配」漏掉的一处。
+
+- 根因（三段叠加，逐段实测）：
+  1. **官方改了激活 tab 的下划线偏移。** 0.1.5-rc.1 是
+     `.tab{padding:0 0 9px}` + `.tab::after{height:2px;bottom:-1px}`
+     （从运行中 GUI 的 CSSOM 读出）；旧版 0.1.1-rc.2 源码是
+     `padding-bottom:11px` + `bottom:1px`——下划线在盒**内**，不溢出。
+     新版下划线比 tab 盒低 1px → 标签行内容比行内容盒多 1px。
+  2. **本插件让标签行成了滚动容器。** `chatLayout` 里 `.tabs` 带
+     `overflow-x: auto`（v0.3.2 起），按 CSS 规范另一轴的 `visible` 会计算成
+     `auto` → `.tabs` 两轴都是滚动容器，那 1px 溢出就变成一条竖向滚动条。
+     实测（Playwright 连运行中的 GUI，360×802）：`.tabs` 高 25px，
+     `clientHeight 25 / scrollHeight 26`，`overflow-x/y` 均为 `auto`。
+  3. **安卓 Chromium 把自定义滚动条常驻渲染。** 官方全局
+     `::-webkit-scrollbar{width:8px}` + `::-webkit-scrollbar-thumb{background:
+     var(--dsh-scrollbar-thumb)}`，实测该变量 `#e5e5e5`、`border-radius:4px`
+     → 标签行右端画出一条 8×约 23px 的浅色圆角小条（手机截图实测小条
+     约 7×23 CSS px、位置 x≈340–347 / 视口 359px，正好等于标签行右缘
+     349px 减去滚动条宽度；颜色实测 ≈#e9e5df，与 #e5e5e5 在 JPEG 下一致；
+     thumb 高 25²/26≈24px 也对得上）。桌面端不出现：>820px 插件整套不注入，
+     且 macOS 用 overlay 滚动条。
+  - 为什么看着像挂在鲸鱼上：标签行官方是 `position: relative; z-index: 1`，
+    而手机端鲸鱼挂件是 `position: fixed; z-index: 0` → 滚动条画在鲸鱼之上，
+    鲸鱼挡不住；会话态鲸鱼又「贴合顶栏」到右上角，正好被这条小条压住。
+- 修复（`chatLayout` 的 `.tabs` 规则）：
+  - `padding-bottom: 1px`（+ `margin-bottom: -1px` 抵消，头部总高不变）——
+    给下划线留出行内 padding 空间，溢出归零，官方 2px 下划线完整、位置不变。
+  - `overflow-y: hidden`——竖向兜底：官方以后再把下划线往下挪，也只会裁掉
+    超出部分，不会再生成滚动条；标签行不再可竖向滚动。
+  - `overflow-x: auto` 保留（标签多时仍可横滑，原功能不减），但加
+    `scrollbar-width: none` + `.tabs::-webkit-scrollbar{display:none}` 不再画
+    横条——与官方 `.stripTabs` 的写法一致。
+- 实测（Playwright 连运行中的 GUI，360×802、插件 0.3.19）：
+  `.tabs` `clientHeight == scrollHeight`（26 == 26）、`.tabs` 上
+  `offsetWidth - clientWidth == 0`；激活下划线仍在（截图核对「对话」下划线
+  2px 完整）；点「轨迹」→ 视图切换正常；头部总高与 0.3.18 一致（标签行
+  26px 边框盒 = 内容 25 + padding 1，负 margin 抵消）。
+
 ## v0.3.18 (2026-09-10)
 
 dsh 0.1.5-rc.1 适配复核（全量审计）后的收尾版本。结论：**除下面两处收尾外，
