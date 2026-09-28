@@ -1,5 +1,63 @@
 # Changelog
 
+## v0.3.22 (2026-09-28)
+
+修复：输入区「访问模式（权限）」弹窗在手机上溢出屏幕右缘，改成与模型选择
+弹窗同款的底部抽屉。
+
+- 症状：点输入区底行的权限触发键（盾牌图标），弹出的「仅可查看 / 工作区内
+  修改 / 完全权限」列表右侧被切掉——卡片右缘连同选中勾一起跑出视口，被
+  `html{overflow-x:hidden}` 裁掉。360px 视口实测菜单右缘 370px，越界 10px；
+  375/390px 只是刚好压线，320px 越界 50px。
+- 根因：该弹窗由 primitives 的 `Menu` 渲染，官方**没有走 portal**——菜单被
+  内联挂在触发键的 `.root` 包装层里，样式是
+  `position:absolute; left:0; top:calc(100%+4px); min-width:218px`
+  （`_list_1nxmc_8` + `_sideTop_1nxmc_52`，向触发键上方展开）。手机上输入区
+  底行的权限触发键偏左（360px 实测 x=152，盾牌图标态宽 44px），218px 从触发键
+  **左缘往右**铺开 → 与触发键在屏幕里的位置直接耦合，触发键越靠右溢出越多。
+  （会话页/首次进入页都一样；设置页「新会话默认权限」的同一个弹窗走的是
+  `_portal_1nxmc_44` 的 fixed 分支并右对齐，不受影响。）
+- 修复（新增 `permissionSheet` 派生块）：与 `modelSheet`/`popupSheet` 完全同款
+  ——`position:fixed` + 左右 10px + `bottom: calc(10px + env(safe-area-inset-bottom))`
+  + 限高 `min(60dvh,520px)` + 18px 圆角 + 上投影 + `z-index:200`，整块相对视口，
+  与触发键位置彻底解耦；内层滚动视口（`role="presentation"`）跟着父级限高滚动。
+- 定位方式：primitives 打进 `dsh-web-frontend` 静态包，没有
+  `data-plugin-css` 样式表，`derive()` 取不到 `_list_1nxmc_8` 这类哈希名。
+  改用官方 `PermissionSelect.module.css` 的 `trigger` 类名（可派生）：菜单与
+  触发键同挂在 `Menu` 的 `.root` 下互为兄弟，故用
+  `:has(> .触发键) > [role="menu"]` 精确命中访问模式这一个弹窗。官方将来若
+  把它改成 portal（fixed + `z-index:1100`），该选择器自然失配——那时也不需要
+  这条规则了。
+- 实测（Playwright + 运行中的 GUI，390/360/320 竖屏 + 740×360 横屏，首次进入页
+  与会话页各一遍）：弹窗四边距视口 10px，右缘越界归零，`border-radius:18px`、
+  `z-index:200`，与模型抽屉逐项一致；`window.__dshMobileUi.status.permissionSheet`
+  为 `ok`。桌面端（1280px）本块不注入，官方原样（absolute / 20px 圆角）。
+  「完全权限」的二次确认弹窗（`RiskConfirmation`）实测 360px 下居中、四边 24px，
+  无需额外处理。
+
+## v0.3.21 (2026-09-26)
+
+调整：favicon 鲸鱼在方底内缩至 85%（`<g>` 中心缩放，四边各留 7.5% 边距）。
+官方 path 本就铺满 50×50 画布，v0.3.20 套上方底后鲸鱼背鳍/尾鳍几乎贴边、
+没了呼吸感。仅改内嵌 SVG 字符串（path 数据原样不动），网页内 UI 零接触。
+
+## v0.3.20 (2026-09-26)
+
+新增：favicon 底色补丁。官方 favicon.svg 是透明底鲸鱼（日间黑鲸/夜间白鲸，
+靠 SVG 内 `prefers-color-scheme` media query 切换），但 media query 的解析
+结果可能与浏览器界面主题脱节（部分手机浏览器如此），透明底让图标色直接
+撞上标签栏底色——白鲸落浅色栏上就看丢了。
+
+- 客户端把官方鲸鱼 path 原样包进圆角方形底（rx=10/50），日间白底黑鲸、
+  夜间黑底白鲸，底与鲸恒为反色，任何主题组合下都清晰；即便浏览器完全不
+  解析 SVG 内的 media query，也会落到日间白底黑鲸这档，依旧可读。
+- 实现：整份 SVG data URI 内嵌（零网络请求），原地替换官方
+  `<link rel="icon">` 的 href，幂等（HMR 重跑 apply 也安全）；官方 path
+  数据逐字节未动。
+- 与视口无关、一次性执行，不进 820px 门控：Mac 日间模式的透明底图标同样
+  要修；除此之外「桌面端零干预」的原则不变。运行状态在
+  `window.__dshMobileUi.favicon`（patched / failed）可查。
+
 ## v0.3.19 (2026-09-14)
 
 修复：手机端会话页「对话/轨迹」标签行右端多出一条小白条（会话态正压在鲸鱼

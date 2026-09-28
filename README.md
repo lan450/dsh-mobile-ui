@@ -17,6 +17,7 @@ Make the [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web
 | Sidebar overlay + details full-screen | Expanding the sidebar on a phone overlays the content instead of squeezing the chat column; the details/preview panel becomes a full-screen layer |
 | Composer safe area | Input area avoids the iOS bottom safe-area inset; the model trigger's text is left to the official component (it already collapses to an icon-only button when its bottom-row container is ≤360px wide); the composer bottom row tightens so the new context-usage button stays on one line |
 | Model picker → bottom sheet | Model selector becomes a thumb-reachable bottom sheet |
+| Access mode (permission) → bottom sheet | The composer's shield-button permission list ships as an absolutely-positioned popup that grows rightward from the trigger's left edge, so on a phone it runs past the viewport's right edge and gets clipped — restyled as the same fixed bottom sheet as the model picker |
 | Command popups → bottom sheet | `/model` and similar popupSelect views become bottom sheets |
 | Context-usage panel | The new official context-usage popup would clip at the viewport edge on narrow screens — restyled as a fixed bottom sheet so it's always fully visible |
 | Conversation header layout | Two-row header (title + download session on one line, standard mode + background tasks on the next), scrollable tabs, capped composer height |
