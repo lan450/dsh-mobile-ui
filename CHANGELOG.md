@@ -1,5 +1,30 @@
 # Changelog
 
+## v0.3.24 (2026-09-30)
+
+调整：访问模式「Auto review」→「Auto」（用户指定的简化命名）。
+
+- 该显示名写死在官方 `@deepseek-ai/dsh-client-ui-permission-presets` 的
+  客户端字典 `permission.access`（`auto.label`，中英都是 "Auto review"；
+  宿主给的预置名对 `auto` 被官方忽略），没有配置出口；`ctx.locale.register`
+  对同一 `(ns, locale)` 只允许注册一次、重复注册抛 `already has locale`，
+  覆盖字典这条路走不通。
+- 改法：包一层 `LocaleRuntime.translate`（`bind(ns)` 缓存的 `t` 最终都走
+  实例方法 `this.translate(ns, key, params)`）——`permission.access` 命名
+  空间下任何含 "Auto review" 的文案统一缩成 "Auto"，其余命名空间/key 原样
+  透传。中英各覆盖 4 条：`auto.label`、`auto.confirm.title`、
+  `auto.confirm.description`、`auto.confirm.enable`；`auto.badge`（EXP）与
+  `auto.description` 不含该词，保持原样。幂等（HMR 重跑不叠加包裹）。
+- 与视口无关（同 favicon 例外，不进 820px 门控）：桌面端的访问模式触发器、
+  菜单、二次确认文案同样是 Auto；locale 服务若晚于本插件就绪则轮询补装。
+  装没装上见 `window.__dshMobileUi.autoLabel`（"Auto" / "pending"）。
+- 实测（Playwright + 运行中 GUI）：390px 与 1280px 打开访问模式菜单，条目
+  文案为「Auto EXP」（原「Auto review EXP」）；枚举字典逐条演练确认改写后
+  的中英文案（如「确认启用 Auto（实验）？」「启用 Auto」）。只打开菜单、
+  未选中任何项，访问模式与会话状态未改动。
+- 范围说明：这是本插件第一处「非布局」的官方文案覆盖；桌面端其余零干预的
+  原则不变。
+
 ## v0.3.23 (2026-09-30)
 
 修复：插件页（左栏「插件」）右上角的「添加插件」按钮在手机上被挤压换行、
