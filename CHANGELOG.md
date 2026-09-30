@@ -1,5 +1,41 @@
 # Changelog
 
+## v0.3.26 (2026-10-01)
+
+修复：重叠自愈守卫把 `flex-wrap: wrap` 加到**纵向** flex 容器上，撑宽整个会话
+列——长命令/长文段不再换行或省略号，整段会话可左右拖动。
+
+- 症状（用户报告）：手机上「看着看着某行命令或某些文段就不换行、不省略号，
+  而是把整个屏幕可预览范围撑宽」，DSH 0.2.0-rc.2 之后才出现。
+- 根因：守卫 `flexAncestor()` 只看 `display:flex|inline-flex|grid`，**不判断
+  `flex-direction`**。两个可交互元素瞬时重叠（加载/流式过程中）时，最近的 flex
+  祖先会命中纵向的会话列 `.column`，于是给它加 `.mui-wrap{flex-wrap:wrap!important}`。
+  对纵向 flex 容器来说，`flex-wrap:wrap` 会让「行交叉尺寸」从容器宽度变成内容的
+  max-content 宽度，`align-items:stretch` 不再把子项钳在列宽内。实测
+  `session-0378af4a…`（390px 视口）：`.column` 宽 268px，但进程组行 `O_Ebla_root`
+  涨到 546px；会话滚动容器 `overflow-y:auto`（因此 `overflow-x` 计算为 `auto`）
+  变成 `scrollWidth 578 / clientWidth 332`，可横向拖 246px。旧实现只加不摘
+  （仅在插件卸载的 disposer 里清理），一次瞬时重叠即永久生效到刷新。
+  DSH 0.2.0 重写进程行/TextShimmer（`display:inline-grid; width:max-content`）后
+  行的固有宽度变大、守卫命中的祖先也变了，因此「最近才出现」。
+- 改法（`lib/client.js`）：
+  1. `flexAncestor()` → `commonAncestor()` + `markTarget()`：以两个元素的**最低
+     共同祖先**为起点向上找容器（旧代码只看 `a` 的祖先，可能根本不含 `b`）；
+     横向 flex / grid → `.mui-wrap`（换行，行为不变），纵向 flex → 新的
+     `.mui-gap`（只加 `row-gap:6px`，仍能分开重叠的两行，但不取消列宽钳制）。
+  2. `[data-chat-flow]`（会话流容器，全部是纵向 flex）任何情况下都不标记。
+  3. `containment` 块补 `[data-chat-flow]{flex-wrap:nowrap!important}` 兜底。
+  4. disposer 同步清理 `.mui-gap`。
+- 实测（Playwright + 运行中 GUI，390px）：
+  - 复现会话：修复前 `.column` 带 `mui-wrap`、flex-wrap=wrap、进程组 546px、
+    滚动区 578/332；修复后 `.column` 无标记、flex-wrap=nowrap、进程组 268px、
+    滚动区 332/332，正文与命令摘要恢复换行/省略号。
+  - 15 个会话批量扫描：横向溢出 0 个（修复前 45 个会话中 2 个命中：246px / 2px）。
+  - 守卫能力回归（注入两个重叠按钮）：横向 flex 容器仍得到 `.mui-wrap`
+    （wrap + row-gap 6px），纵向容器得到 `.mui-gap`（nowrap + row-gap 6px）。
+- 说明：`.mui-wrap`/`.mui-gap` 仍保持「只加不摘」——摘除会让仍然重叠的布局在
+  wrap/nowrap 之间来回抖动；方向判断已消除唯一的破坏性路径。
+
 ## v0.3.25 (2026-09-30)
 
 调整：插件页头部归行方式改版（用户指定）——「标题 + 添加插件」留第一行，
